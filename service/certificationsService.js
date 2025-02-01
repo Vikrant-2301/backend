@@ -10,13 +10,15 @@ const s3 = new AWS.S3({
 
 const uploadFileToS3 = async (file) => {
   const params = {
-    Bucket: process.env.AWS_BUCKET_NAME,
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: `certifications/${Date.now()}_${file.originalname}`,
     Body: file.buffer,
     ContentType: file.mimetype,
   };
 
   const s3Response = await s3.upload(params).promise();
+  console.log("🚀🚀🚀 ~ uploadFileToS3 ~ s3Response:", s3Response)
+
   return s3Response.Location;
 };
 
@@ -31,12 +33,17 @@ const getUserIdByEmail = async (email) => {
 
 const createCertification = async (data, file) => {
   const { email, certificateSerialNumber } = data;
+  console.log("🚀 ~ Line 34 ~  :  ");
 
   // Get the userId from the external API
   const userId = await getUserIdByEmail(email);
+  console.log("🚀🚀🚀 ~ createCertification ~ userId:", userId)
+
 
   // Upload the file to S3
   const fileUrl = await uploadFileToS3(file);
+  console.log("🚀🚀🚀 ~ createCertification ~ fileUrl:", fileUrl)
+
 
   // Save the certification to the database
   return certificationRepository.createCertification({
@@ -55,14 +62,11 @@ module.exports = {
   getCertificationsBySerialNumber: certificationRepository.getCertificationBySerialNumber,
   deleteCertificationById: async (id) => {
     const certification = await certificationRepository.getCertificationById(id);
+    console.log("🚀🚀🚀 ~ deleteCertificationById: ~ certification:", certification)
+
     if (!certification) {
       throw new Error('Certification not found');
     }
-    const params = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: certification.fileUrl.split('.amazonaws.com/')[1],
-    };
-    await s3.deleteObject(params).promise();
     return certificationRepository.deleteCertificationById(id);
   },
 };

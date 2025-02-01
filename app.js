@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 8000;
 app.use(bodyParser.json());
 
 const corsOptions = {
-    origin: ['http://127.0.0.1:5500', 'http://localhost:3000'], // Add more origins as needed
+    origin: ['http://127.0.0.1:5500', 'http://localhost:3000','*'], // Add more origins as needed
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

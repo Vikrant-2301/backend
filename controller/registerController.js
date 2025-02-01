@@ -19,6 +19,17 @@ const register = async (req, res) => {
   }
 };
 
+
+const getAll = async (req, res) => {
+  try {
+    const users = await registrationService.getAllRegisteredData();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
-  register
+  register,
+  getAll
 };

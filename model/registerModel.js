@@ -13,7 +13,7 @@ const RegisterSchema = new mongoose.Schema({
   registrationType: { type: String, enum: ['individual', 'team'], required: true },
   teamSize: { type: Number, required: function() { return this.registrationType === 'team'; }},
   teamMembers: { type: [TeamMember.schema], required: function() { return this.registrationType === 'team'; }}
-}, { collection: 'register-data' }); // Specify the collection name
+}, { collection: 'register-data' });
 
 // Avoid OverwriteModelError
 const RegisterModel = mongoose.model('register-data', RegisterSchema);

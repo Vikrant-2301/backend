@@ -2,14 +2,17 @@ const certificationService = require('../service/certificationsService');
 
 const createCertification = async (req, res) => {
   try {
-    const { email, certificateSerialNumber, userId } = req.body;
+    const { email, certificateSerialNumber } = req.body;
+    console.log("🚀🚀🚀 ~ createCertification ~ req.body:", req.body)
+    console.log("🚀🚀🚀 ~ createCertification ~ req.file:", req.file)
+
 
     if (!req.file) {
       return res.status(400).json({ error: 'File is required' });
     }
 
     const newCertification = await certificationService.createCertification(
-      { email, certificateSerialNumber, userId },
+      { email, certificateSerialNumber },
       req.file
     );
 

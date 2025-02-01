@@ -51,7 +51,19 @@ const validateUserData = (data) => {
   return errors;
 };
 
+
+const getAllRegisteredData = async () => {
+  try {
+    const users = await RegisterModel.find();
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   registerUser,
-  validateUserData
+  validateUserData,
+  getAllRegisteredData
 };
