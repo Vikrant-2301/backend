@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config');
-const { findUserByEmail, createUser, getAllUsers,getUserByEmail } = require('../repo/authRepo');
+const { findUserByEmail, createUser, getAllUsers,getUserByEmail ,deleteUserById} = require('../repo/authRepo');
 
 const signup = async (userData) => {
     const { role, ...rest } = userData; // Extract role and rest of the fields
@@ -34,7 +34,7 @@ const login = async ({ email, password }) => {
     if (!isPasswordValid) throw new Error('Invalid credentials');
 
     const token = jwt.sign({ id: user._id, email: user.email,role:user.role }, jwtSecret, { expiresIn: '3h' });
-    return  {token:token, email:user.email};
+    return  {token:token, email:user.email, role:user.role};
 };
 
 const fetchAllUsers = async () => {
@@ -47,5 +47,11 @@ const fetchUserByEmail = async (email) => {
     return user;
 };
 
+const deleteUser = async (id) => {
+    const user = await deleteUserById(id);
+    if (!user) throw new Error('User not found');
+    return user;
+};
 
-module.exports = { signup, login, fetchAllUsers, fetchUserByEmail };
+
+module.exports = { signup, login, fetchAllUsers, fetchUserByEmail,deleteUser };

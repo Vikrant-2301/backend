@@ -1,4 +1,6 @@
-const { createCourseService, getAllCoursesService, getCoursePriceByIdService } = require("../service/courseService")
+const { createCourseService, getAllCoursesService,
+   getCoursePriceByIdService ,deleteCourseService,updateCourseService,
+  getCourseByIdService} = require("../service/courseService")
 
 const createCourseController = async (req, res) => {
     try {
@@ -17,6 +19,22 @@ const getAllCoursesController = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+// get course by courseId
+const getCourseByIdController = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await getCourseByIdService(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+        res.status(200).json(course);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching course', error: error.message });
+    }
+  }
+
 const getCoursePriceByIdController = async (req, res) => {
     try {
       const { courseName } = req.params;
@@ -31,4 +49,45 @@ const getCoursePriceByIdController = async (req, res) => {
       res.status(500).json({ message: 'Error fetching product', error: error.message });
     }
   };
-module.exports = {getCoursePriceByIdController,getAllCoursesController, createCourseController};
+
+
+  // delete a course by courseId
+const deleteCourseController = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await deleteCourseService(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+        res.status(200).json(course);
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting course', error: error.message });
+    }
+  }
+
+
+// update a course by courseId
+const updateCourseController = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        console.log("🚀🚀🚀 ~ updateCourseController ~ courseId:", courseId)
+        console.log("🚀🚀🚀 ~ updateCourseController ~ req.body:", req.body)
+
+        const course = await updateCourseService(courseId, req.body);
+
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+        res.status(200).json(course);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating course', error: error.message });
+    }
+  }
+
+module.exports = {
+  getCoursePriceByIdController,
+  getAllCoursesController, 
+  createCourseController, 
+  deleteCourseController,
+  getCourseByIdController,
+  updateCourseController};

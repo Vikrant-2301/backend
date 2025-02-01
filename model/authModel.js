@@ -5,9 +5,7 @@ const authSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     // phoneNumber: { type: String, required: true },
     password: { type: String, required: true },
-    role: {type: String,enum: ['admin', 'user'],default: 'user'}
-});
+    role: {type: String, enum: ['admin', 'user'], default: 'user'}
+}, { timestamps: true });
 
 module.exports = mongoose.model('Auth', authSchema);
-
-// chnge table name to auth
