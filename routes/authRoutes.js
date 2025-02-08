@@ -4,7 +4,8 @@ const {
     loginController,
     getAllUsersController,
     getUserByEmailController,
-    deleteUserByIdController
+    deleteUserByIdController,
+    editUserController
 } = require('../controller/authController');
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.post('/login', loginController);
 router.get('/users', getAllUsersController);
 router.get('/users/:email', getUserByEmailController); 
 router.delete('/users/:id', deleteUserByIdController);
+router.put('/users/:id', editUserController);
 
 module.exports = router;

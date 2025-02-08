@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config');
-const { findUserByEmail, createUser, getAllUsers,getUserByEmail ,deleteUserById} = require('../repo/authRepo');
+const { findUserByEmail,editUser, findUserById,createUser, getAllUsers,getUserByEmail ,deleteUserById} = require('../repo/authRepo');
 
 const signup = async (userData) => {
     const { role, ...rest } = userData; // Extract role and rest of the fields
@@ -53,5 +53,11 @@ const deleteUser = async (id) => {
     return user;
 };
 
+const editUserService = async (id, userData) => {
+    const user = await findUserById(id);
+    if (!user) throw new Error('User not found');
+    return editUser(id, userData);
+};
 
-module.exports = { signup, login, fetchAllUsers, fetchUserByEmail,deleteUser };
+
+module.exports = { signup, login, fetchAllUsers, fetchUserByEmail,deleteUser,editUserService };

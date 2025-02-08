@@ -1,4 +1,4 @@
-const { signup, login, fetchAllUsers, fetchUserByEmail,deleteUser } = require('../service/authService');
+const { signup, login, fetchAllUsers, editUserService,fetchUserByEmail,deleteUser } = require('../service/authService');
 const signupController = async (req, res) => {
     try {
         const user = await signup(req.body);
@@ -49,4 +49,14 @@ const deleteUserByIdController = async (req, res) => {
     }
 }
 
-module.exports = { signupController, loginController, getAllUsersController, getUserByEmailController ,deleteUserByIdController};
+const editUserController = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const user = await editUser(id, req.body);
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+};
+
+module.exports = { signupController, loginController, getAllUsersController, getUserByEmailController ,deleteUserByIdController,editUserController};
