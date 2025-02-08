@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config');
-const { findUserByEmail,editUser, findUserById,createUser, getAllUsers,getUserByEmail ,deleteUserById} = require('../repo/authRepo');
+const { findUserByEmail,editUserByEmail, findUserById,createUser, getAllUsers,getUserByEmail ,deleteUserById} = require('../repo/authRepo');
 
 const signup = async (userData) => {
     const { role, ...rest } = userData; // Extract role and rest of the fields
@@ -53,10 +53,17 @@ const deleteUser = async (id) => {
     return user;
 };
 
-const editUserService = async (id, userData) => {
-    const user = await findUserById(id);
+const editUserService = async (email, userData) => {
+    
+    console.log("🚀🚀🚀 ~ editUserService ~ email:", email)
+    console.log("🚀🚀🚀 ~ editUserService ~ userData:", userData)
+
+    const user = await findUserByEmail(email);
     if (!user) throw new Error('User not found');
-    return editUser(id, userData);
+    console.log("🚀🚀🚀 ~ editUserService ~ user:", user)
+    const newUser = await editUserByEmail(email, userData);
+
+    return newUser;
 };
 
 
