@@ -18,8 +18,8 @@ pids/
 coverage/
 
 # Environment files
-.env
-.env.*.local
+# .env
+# .env.*.local
 
 # Dependency directories
 /.pnp
