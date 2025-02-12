@@ -20,12 +20,14 @@ const PORT = process.env.PORT || 8000;
 app.use(bodyParser.json());
 
 const corsOptions = {
-    origin: ['http://127.0.0.1:5500', 'http://localhost:3000','*'], // Add more origins as needed
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    origin: '*', // Allows requests from any origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: true, // Only works with specific origins, not '*'
 };
+
 app.use(cors(corsOptions));
+
 
 // Razorpay Setup
 const razorpay = new Razorpay({
