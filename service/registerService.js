@@ -15,8 +15,29 @@ const registerUser = async (data) => {
       email = jsonUserData.teamMembers.map(member => member.email);
     }
     console.log('email',email)
+
+    const subject = "Payment Successful";
+     
+  
+
     email.forEach(e => {
-      sendMail(e, "Payment Successful", "Payment Done.");
+
+      const body = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+      <h2 style="color: #4CAF50; text-align: center;">Registration Successful</h2>
+      <p>Dear ${e},</p>
+      <p>I am pleased to inform you that your registration for The Social Hub, the DiscoverArch competition, has been successfully processed.</p>
+      <div style="background-color: #f9f9f9; padding: 15px; margin: 20px 0; border-radius: 8px;">
+        <h4 style="margin: 0 0 10px;">Team Identification Number:</h4>
+      </div>
+      <p>We have curated an exciting lineup of webinars and events to further enrich your architectural journey. Expect notifications soon with details on these insightful sessions.</p>
+      <p>For more updates, follow our Instagram page: <a href="https://www.instagram.com/discoverarch" style="color: #4CAF50;">@discoverarch</a></p>
+      <p>Best Regards,<br>Team DiscoverArch</p>
+      <footer style="text-align: center; margin-top: 30px; font-size: 12px; color: #888;">
+        <p>&copy; 2025 DiscoverArch. All rights reserved.</p>
+      </footer>
+    </div>`;
+
+      sendMail(e, subject, body);
     });
     
 
