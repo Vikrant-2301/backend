@@ -27,13 +27,13 @@ const createStudentAndOrder = async (studentData) => {
 
     // Create student profile
     const student = await createStudentProfile(studentData);
-
+    const payment_capture = 1;
     // Razorpay order creation logic
     const options = {
         amount: price * 100, // Amount in paise
         currency: 'INR',
         receipt: `receipt_${new Date().getTime()}`,
-        payment_capture: 1,
+        payment_capture,
     };
     const order = await razorpay.orders.create(options);
 
