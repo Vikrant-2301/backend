@@ -1,4 +1,5 @@
-const { signup, login, fetchAllUsers, editUserService,fetchUserByEmail,deleteUser } = require('../service/authService');
+const { signup, login, fetchAllUsers, editUserService, fetchUserByEmail, deleteUser } = require('../service/authService');
+
 const signupController = async (req, res) => {
     try {
         const user = await signup(req.body);
@@ -11,10 +12,10 @@ const signupController = async (req, res) => {
 const loginController = async (req, res) => {
     try {
         const token = await login(req.body);
-        const email = token["email"]
-        const jwtToken = token["token"]
-        const role = token["role"]
-        res.status(200).json({ message: 'Login successfull',jwtToken, email, role });
+        const email = token["email"];
+        const jwtToken = token["token"];
+        const role = token["role"];
+        res.status(200).json({ message: 'Login successful', jwtToken, email, role });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -31,10 +32,8 @@ const getAllUsersController = async (req, res) => {
 
 const getUserByEmailController = async (req, res) => {
     try {
-        const { email } = req.params; // Get email from URL params
+        const { email } = req.params;
         const user = await fetchUserByEmail(email);
-        console.log("🚀🚀🚀 ~ getUserByEmailController ~ user:", user)
-
         res.status(200).json(user);
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -43,18 +42,23 @@ const getUserByEmailController = async (req, res) => {
 
 const deleteUserByIdController = async (req, res) => {
     try {
-        const { id } = req.params; // Get email from URL params
+        const { id } = req.params;
         const user = await deleteUser(id);
         res.status(200).json(user);
     } catch (error) {
         res.status(404).json({ error: error.message });
     }
-}
+};
 
 const editUserController = async (req, res) => {
     try {
-        const { email } = req.query; 
-        console.log("🚀🚀🚀 ~ editUserController ~ email:", email)
+        const { email } = req.query;
+
+        // Multer adds file info to req.file
+        if (req.file) {
+            // Add profilePic filename to user data to save in DB
+            req.body.profilePic = req.file.filename;
+        }
 
         const user = await editUserService(email, req.body);
         res.status(200).json(user);
@@ -63,4 +67,4 @@ const editUserController = async (req, res) => {
     }
 };
 
-module.exports = { signupController, loginController, getAllUsersController, getUserByEmailController ,deleteUserByIdController,editUserController};
+module.exports = { signupController, loginController, getAllUsersController, getUserByEmailController, deleteUserByIdController, editUserController };
