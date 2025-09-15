@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const helmet = require('helmet'); // Security middleware
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const path = require('path');
 
@@ -23,15 +23,28 @@ const PORT = process.env.PORT || 8000;
 // --- Security & Core Middleware ---
 app.use(helmet()); // Sets crucial security headers
 
-// Production-ready CORS configuration
+// FIX: Whitelist of allowed frontend domains for production-ready CORS
+const whitelist = [
+    'http://localhost:3000',          // Your local frontend
+    'https://discoverarch.org',       // Your production domain (non-www)
+    'https://www.discoverarch.org'    // Your production domain (www)
+];
+
 const corsOptions = {
-    // Whitelist your frontend URL from environment variables
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin || whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 };
+
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Enable pre-flight requests
+app.options('*', cors(corsOptions)); // Enable pre-flight requests for all routes
 
 // Modern replacements for bodyParser
 app.use(express.json());
