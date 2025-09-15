@@ -1,69 +1,74 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
-const orderRoutes = require('./routes/orderRoutes');
-const authRoutes = require('./routes/authRoutes');
-const postRoutes = require('./routes/postRoutes');
-const registerRoutes = require('./routes/registerRoutes');
-const courseRoutes = require('./routes/courseRoutes');
-const certificationsRoutes = require('./routes/certificationsRoutes');
-const Razorpay = require('razorpay');
-const config = require('./config');
+const path = require('path');
 
 dotenv.config();
+
+const authRoutes = require('./routes/authRoutes');
+const postRoutes = require('./routes/postRoutes');
+const courseRoutes = require('./routes/courseRoutes');
+const registerRoutes = require('./routes/registerRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const certificationsRoutes = require('./routes/certificationsRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Middleware
-app.use(bodyParser.json());
+// --- SECURITY & CORE MIDDLEWARE ---
+app.use(helmet()); // Sets crucial security headers
 
+// Restrict requests to your frontend URL
 const corsOptions = {
-    origin: '*', // Allows requests from any origin
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Only works with specific origins, not '*'
 };
-
 app.use(cors(corsOptions));
 
+app.use(express.json()); // Modern replacement for bodyParser
+app.use(express.urlencoded({ extended: true }));
+app.use('/static', express.static(path.join(__dirname, 'static')));
 
-// Razorpay Setup
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-// Mongoose Connection
+// --- DATABASE CONNECTION ---
 mongoose.set('strictQuery', false);
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('✅ MongoDB connected successfully'))
+    .catch(err => {
+        console.error('❌ MongoDB connection error:', err);
+        process.exit(1); // Exit process if DB connection fails
+    });
 
-// Routes (using dynamic approach for api/v1)
-const routes = [
-    { path: '/auth', router: authRoutes },
-    { path: '/posts', router: postRoutes },
-    { path: '/courses', router: courseRoutes },
-    { path: '/register', router: registerRoutes },
-    { path: '/orders', router: orderRoutes},
-    { path: '/certifications', router: certificationsRoutes},
-]; 
+// --- API ROUTES ---
+const apiPrefix = '/api/v1';
+app.use(`${apiPrefix}/auth`, authRoutes);
+app.use(`${apiPrefix}/posts`, postRoutes);
+app.use(`${apiPrefix}/courses`, courseRoutes);
+app.use(`${apiPrefix}/register`, registerRoutes);
+app.use(`${apiPrefix}/orders`, orderRoutes);
+app.use(`${apiPrefix}/certifications`, certificationsRoutes);
 
-routes.forEach(route => {
-    app.use(`/api/v1${route.path}`, route.router);
+// --- 404 HANDLER for unknown API routes ---
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API route not found' });
 });
 
-// Error Handling Middleware
+// --- GLOBAL ERROR HANDLING ---
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(err.status || 500).json({
-        error: err.message || 'Internal Server Error',
+    console.error(err.stack);
+    const statusCode = err.statusCode || 500;
+    const message = err.message || 'Internal Server Error';
+    res.status(statusCode).json({
+        error: {
+            message,
+            ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+        }
     });
 });
 
-// Start Server
+// --- START SERVER ---
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
 });
