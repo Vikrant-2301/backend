@@ -1,28 +1,29 @@
-var nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer');
 
-// FIX: Use environment variables for credentials. Never hardcode them.
-var transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS 
-  }
+    pass: process.env.GMAIL_PASS,
+  },
 });
 
-async function sendMail(to, subject, text){
-  var mailOptions = {
-    from: process.env.GMAIL_USER,
+const sendMail = async (to, subject, text) => {
+  const mailOptions = {
+    from: `"DiscoverArch" <${process.env.GMAIL_USER}>`,
     to: to,
     subject: subject,
     text: text,
   };
-  transporter.sendMail(mailOptions, function(error, info){
-    if (error) {
-      console.log('Error sending email:', error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
-  });
-}
 
-module.exports = {sendMail};
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return info;
+  } catch (error) {
+    console.error('Error occurred while sending email:', error);
+    // This will ensure that if email fails, the signup process stops and shows an error.
+    throw new Error('Failed to send email. Please check server logs and email credentials.');
+  }
+};
+
+module.exports = { sendMail };

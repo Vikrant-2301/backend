@@ -1,6 +1,8 @@
+//backend\routes\authRoutes.js
 const express = require('express');
 const {
-    signupController,
+    sendOtpController,
+    verifyAndCreateController,
     loginController,
     getAllUsersController,
     getUserByEmailController,
@@ -10,26 +12,31 @@ const {
     assignAdminController,
     verifyTokenController,
     forgotPasswordController,
-    resetPasswordController
+    resetPasswordController,
+    resendVerificationController,
+    verifyAccountController
 } = require('../controller/authController');
 const authMiddleware = require('../middleware/auth.middleware');
 const roleMiddleware = require('../middleware/access.middleware');
 
 const router = express.Router();
 
-// --- PUBLIC ROUTES ---
-router.post('/signup', signupController);
+// --- NEW SIGNUP FLOW ---
+router.post('/send-otp', sendOtpController);
+router.post('/verify-and-create', verifyAndCreateController);
+router.post('/resend-verification', authMiddleware, resendVerificationController);
+
+// --- OTHER PUBLIC ROUTES ---
 router.post('/login', loginController);
 router.post('/forgot-password', forgotPasswordController);
 router.post('/reset-password/:token', resetPasswordController);
 router.get('/users/:email', getUserByEmailController);
 
-// --- AUTHENTICATED ROUTES ---
+// --- AUTHENTICATED & ADMIN ROUTES ---
+router.post('/verify-account', authMiddleware, verifyAccountController);
 router.get('/verify-token', authMiddleware, verifyTokenController);
-router.put('/profile', authMiddleware, editUserController); // No more upload middleware
+router.put('/profile', authMiddleware, editUserController);
 router.post('/password', authMiddleware, updatePasswordController);
-
-// --- ADMIN-ONLY ROUTES ---
 router.get('/users', authMiddleware, roleMiddleware('admin'), getAllUsersController);
 router.delete('/users/:id', authMiddleware, roleMiddleware('admin'), deleteUserByIdController);
 router.post('/assign-admin', authMiddleware, roleMiddleware('admin'), assignAdminController);

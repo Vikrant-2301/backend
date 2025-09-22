@@ -1,57 +1,20 @@
-// controller/authController.js
-const {
-    signup, login, fetchAllUsers, editUserService, fetchUserByEmail,
-    deleteUser, updatePassword, assignAdmin, verifyToken,
-    forgotPassword, resetPassword
-} = require('../service/authService');
+//backend\controller\authController.js
+const authService = require('../service/authService');
 
-const forgotPasswordController = async (req, res) => {
+const sendOtpController = async (req, res) => {
     try {
-        await forgotPassword(req.body.email);
-        res.status(200).json({ message: 'If a user with that email exists, a password reset link has been sent.' });
-    } catch (error) {
-        console.error("Forgot Password Error:", error);
-        res.status(200).json({ message: 'If a user with that email exists, a password reset link has been sent.' });
-    }
-};
-
-const resetPasswordController = async (req, res) => {
-    try {
-        const { token } = req.params;
-        const { password } = req.body;
-        await resetPassword(token, password);
-        res.status(200).json({ message: 'Password has been successfully reset.' });
+        await authService.sendRegistrationOtp(req.body);
+        res.status(200).json({ message: 'OTP sent successfully to your email.' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
 
-const editUserController = async (req, res) => {
+const verifyAndCreateController = async (req, res) => {
     try {
-        const { id } = req.user;
-        const user = await editUserService(id, req.body); // No file argument
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(error.message === 'User not found' ? 404 : 500).json({ error: error.message });
-    }
-};
-
-// --- Other controllers ---
-
-const signupController = async (req, res) => {
-    try {
-        const user = await signup(req.body);
-        res.status(201).json({ message: 'User created successfully', user });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
-
-const loginController = async (req, res) => {
-    try {
-        const tokenData = await login(req.body);
-        res.status(200).json({
-            message: 'Login successful',
+        const tokenData = await authService.verifyAndCreateUser(req.body);
+        res.status(201).json({
+            message: 'Account created and verified successfully!',
             jwtToken: tokenData.token,
             email: tokenData.email,
             role: tokenData.role,
@@ -62,9 +25,29 @@ const loginController = async (req, res) => {
     }
 };
 
+const verifyAccountController = async (req, res) => {
+    try {
+        const { otp } = req.body;
+        // User email is available from authMiddleware via req.user.email
+        const result = await authService.verifyExistingUser({ email: req.user.email, otp });
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+const loginController = async (req, res) => {
+    try {
+        const tokenData = await authService.login(req.body);
+        res.status(200).json({ message: 'Login successful', ...tokenData });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 const getAllUsersController = async (req, res) => {
     try {
-        const users = await fetchAllUsers();
+        const users = await authService.fetchAllUsers();
         res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -73,8 +56,7 @@ const getAllUsersController = async (req, res) => {
 
 const getUserByEmailController = async (req, res) => {
     try {
-        const { email } = req.params;
-        const user = await fetchUserByEmail(email);
+        const user = await authService.fetchUserByEmail(req.params.email);
         res.status(200).json(user);
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -83,19 +65,25 @@ const getUserByEmailController = async (req, res) => {
 
 const deleteUserByIdController = async (req, res) => {
     try {
-        const { id } = req.params;
-        const user = await deleteUser(id);
-        res.status(200).json(user);
+        await authService.deleteUser(req.params.id);
+        res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
         res.status(404).json({ error: error.message });
     }
 };
 
+const editUserController = async (req, res) => {
+    try {
+        const user = await authService.editUserService(req.user.id, req.body);
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(error.message === 'User not found' ? 404 : 500).json({ error: error.message });
+    }
+};
+
 const updatePasswordController = async (req, res) => {
     try {
-        const { email } = req.user;
-        const { currentPassword, newPassword } = req.body;
-        await updatePassword({ email, currentPassword, newPassword });
+        await authService.updatePassword({ email: req.user.email, ...req.body });
         res.status(200).json({ message: 'Password updated successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -104,8 +92,7 @@ const updatePasswordController = async (req, res) => {
 
 const assignAdminController = async (req, res) => {
     try {
-        const { userEmail } = req.body;
-        const user = await assignAdmin(userEmail);
+        const user = await authService.assignAdmin(req.body.userEmail);
         res.status(200).json({ message: 'User promoted to admin', user });
     } catch (error) {
         res.status(404).json({ error: error.message });
@@ -114,16 +101,55 @@ const assignAdminController = async (req, res) => {
 
 const verifyTokenController = (req, res) => {
     try {
-        const user = verifyToken(req.user);
+        const user = authService.verifyToken(req.user);
         res.status(200).json({ valid: true, user });
     } catch (error) {
         res.status(401).json({ valid: false, error: error.message });
     }
 };
 
+const resendVerificationController = async (req, res) => {
+    try {
+        const { email } = req.body;
+        await authService.sendRegistrationOtp({ email });
+        res.status(200).json({ message: 'Verification email resent successfully.' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+const forgotPasswordController = async (req, res) => {
+    try {
+        await authService.forgotPassword(req.body.email);
+        res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    } catch (error) {
+        console.error("Forgot Password Error:", error);
+        res.status(500).json({ error: 'Failed to send password reset email. Please try again later.' });
+    }
+};
+
+const resetPasswordController = async (req, res) => {
+    try {
+        await authService.resetPassword(req.params.token, req.body.password);
+        res.status(200).json({ message: 'Password has been successfully reset.' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 module.exports = {
-    signupController, loginController, getAllUsersController,
-    getUserByEmailController, deleteUserByIdController, editUserController,
-    updatePasswordController, assignAdminController, verifyTokenController,
-    forgotPasswordController, resetPasswordController
+    sendOtpController,
+    verifyAndCreateController,
+    loginController,
+    getAllUsersController,
+    getUserByEmailController,
+    deleteUserByIdController,
+    editUserController,
+    updatePasswordController,
+    assignAdminController,
+    verifyTokenController,
+    forgotPasswordController,
+    resetPasswordController,
+    resendVerificationController,
+    verifyAccountController
 };

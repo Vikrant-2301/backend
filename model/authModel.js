@@ -16,6 +16,9 @@ const authSchema = new mongoose.Schema({
     passwordResetToken: String,
     passwordResetExpires: Date,
 
+    // Fields for OTP Verification
+    isVerified: { type: Boolean, default: false },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Auth', authSchema);
