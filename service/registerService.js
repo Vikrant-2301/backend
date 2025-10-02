@@ -3,7 +3,7 @@ const RegisterModel = require('../model/registerModel');
 const { sendMail } = require('../utils/mail.util');
 const registerUser = async (data) => {
   try {
-    
+
     const user = new RegisterModel(data);
     await user.save();
     console.log(user);
@@ -17,22 +17,22 @@ const registerUser = async (data) => {
     console.log('email',email)
 
     const subject = "Registration Successfull";
-     
-  
+
+
 
     email.forEach(e => {
 
       const body = `Dear Participant,
       I am pleased to inform you that your registration for The Social Hub, the DiscoverArch competition, has been successfully processed.
       Your unique team identification number will be provided soon.
-      
+
       For more updates, follow our Instagram page: "https://www.instagram.com/discoverarch"
       Best Regards,
       Team DiscoverArch`;
 
       sendMail(e, subject, body);
     });
-    
+
 
     return user;
   } catch (error) {

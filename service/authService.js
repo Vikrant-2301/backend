@@ -233,4 +233,3 @@ module.exports = {
   resetPassword,
   verifyExistingUser,
 };
-

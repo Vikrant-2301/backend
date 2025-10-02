@@ -6,7 +6,7 @@ const teamMemberSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true, match: /^\d{10}$/ },
   dob: { type: Date, required: true },
   course: { type: String, required: true },
-  academicYear: { type: Number, required: true },
+  academicYear: { type: String, required: true }, // FIX: Changed type from Number to String
   collegeName: { type: String, required: true }
 }, { collection: 'teamMembers' }); // Specify the collection name
 

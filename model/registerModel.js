@@ -7,7 +7,7 @@ const RegisterSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: false, match: /^\d{10}$/ },
   dob: { type: Date, required: false },
   course: { type: String, required: false },
-  academicYear: { type: Number, required:false },
+  academicYear: { type: String, required: false }, // FIX: Changed type from Number to String
   collegeName: { type: String, required: false},
   teamName: {type: String, required: false},
   registrationType: { type: String, enum: ['individual', 'team'], required: true },

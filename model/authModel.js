@@ -19,6 +19,9 @@ const authSchema = new mongoose.Schema({
     // Fields for OTP Verification
     isVerified: { type: Boolean, default: false },
 
+    // Added to track user's competition registrations
+    registeredCompetitions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Competition' }],
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Auth', authSchema);
