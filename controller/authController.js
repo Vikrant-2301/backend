@@ -1,4 +1,3 @@
-//backend\controller\authController.js
 const authService = require('../service/authService');
 
 const sendOtpController = async (req, res) => {
@@ -20,17 +19,6 @@ const verifyAndCreateController = async (req, res) => {
             role: tokenData.role,
             userId: tokenData.userId
         });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
-
-const verifyAccountController = async (req, res) => {
-    try {
-        const { otp } = req.body;
-        // User email is available from authMiddleware via req.user.email
-        const result = await authService.verifyExistingUser({ email: req.user.email, otp });
-        res.status(200).json(result);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -150,6 +138,5 @@ module.exports = {
     verifyTokenController,
     forgotPasswordController,
     resetPasswordController,
-    resendVerificationController,
-    verifyAccountController
+    resendVerificationController
 };

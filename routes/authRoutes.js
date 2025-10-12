@@ -1,4 +1,3 @@
-//backend\routes\authRoutes.js
 const express = require('express');
 const {
     sendOtpController,
@@ -13,8 +12,7 @@ const {
     verifyTokenController,
     forgotPasswordController,
     resetPasswordController,
-    resendVerificationController,
-    verifyAccountController
+    resendVerificationController
 } = require('../controller/authController');
 const authMiddleware = require('../middleware/auth.middleware');
 const roleMiddleware = require('../middleware/access.middleware');
@@ -33,7 +31,6 @@ router.post('/reset-password/:token', resetPasswordController);
 router.get('/users/:email', getUserByEmailController);
 
 // --- AUTHENTICATED & ADMIN ROUTES ---
-router.post('/verify-account', authMiddleware, verifyAccountController);
 router.get('/verify-token', authMiddleware, verifyTokenController);
 router.put('/profile', authMiddleware, editUserController);
 router.post('/password', authMiddleware, updatePasswordController);

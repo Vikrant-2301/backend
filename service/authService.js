@@ -1,4 +1,3 @@
-//backend\service\authService.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -15,18 +14,20 @@ const {
 } = require('../repo/authRepo');
 const User = require('../model/authModel');
 
+// A simple in-memory cache for pending registrations.
 const pendingRegistrations = new Map();
 
 const sendRegistrationOtp = async ({ fullName, email, password }) => {
     const existingUser = await findUserByEmail(email);
-
+    
+    // If this is a resend verification request for an existing user
     if (existingUser && !fullName && !password) {
         if (existingUser.isVerified) {
             throw new Error('This account is already verified.');
         }
         
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 10 * 60 * 1000); 
+        const expires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
 
         pendingRegistrations.set(email, { 
             fullName: `${existingUser.firstName} ${existingUser.lastName}`, 
@@ -40,6 +41,7 @@ const sendRegistrationOtp = async ({ fullName, email, password }) => {
         setTimeout(() => {
             if (pendingRegistrations.has(email) && pendingRegistrations.get(email).otp === otp) {
                 pendingRegistrations.delete(email);
+                console.log(`Expired OTP for ${email} cleaned up.`);
             }
         }, 10 * 60 * 1000 + 1000);
 
@@ -49,19 +51,21 @@ const sendRegistrationOtp = async ({ fullName, email, password }) => {
         return { message: 'OTP sent successfully.' };
     }
     
+    // For new user registration
     if (existingUser) {
         throw new Error('An account with this email already exists.');
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedPassword = await bcrypt.hash(password, 10);
-    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
 
     pendingRegistrations.set(email, { fullName, email, hashedPassword, otp, expires });
     
     setTimeout(() => {
         if (pendingRegistrations.has(email) && pendingRegistrations.get(email).otp === otp) {
             pendingRegistrations.delete(email);
+            console.log(`Expired OTP for ${email} cleaned up.`);
         }
     }, 10 * 60 * 1000 + 1000);
 
@@ -83,13 +87,17 @@ const verifyAndCreateUser = async ({ email, otp }) => {
 
     let user;
     
+    // If this is an existing user being verified
     if (pendingUser.existingUser) {
         user = await findUserByEmail(email);
-        if (!user) throw new Error('User not found. Please sign up again.');
+        if (!user) {
+            throw new Error('User not found. Please sign up again.');
+        }
         
         user.isVerified = true;
         await user.save();
     } else {
+        // This is a new user registration
         const nameParts = pendingUser.fullName.trim().split(" ");
         user = await createUser({
             firstName: nameParts[0],
@@ -115,6 +123,7 @@ const login = async ({ email, password }) => {
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) throw new Error('Invalid credentials');
 
+  // Allow login even if account is not verified, but include verification status
   const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, jwtSecret, { expiresIn: '3h' });
   return { 
     token, 
@@ -125,35 +134,10 @@ const login = async ({ email, password }) => {
   };
 };
 
-const verifyExistingUser = async ({ email, otp }) => {
-    const pendingUser = pendingRegistrations.get(email);
-
-    if (!pendingUser) {
-        throw new Error('No pending verification found or OTP expired. Please resend the code.');
-    }
-    if (pendingUser.otp !== otp) {
-        throw new Error('Invalid OTP.');
-    }
-
-    const user = await findUserByEmail(email);
-    if (!user) {
-        throw new Error('User not found.');
-    }
-    if (user.isVerified) {
-        throw new Error('This account is already verified.');
-    }
-
-    user.isVerified = true;
-    await user.save();
-
-    pendingRegistrations.delete(email);
-
-    return { message: 'Account verified successfully!', user: { isVerified: user.isVerified } };
-};
-
 const editUserService = async (userId, userData) => {
     const user = await findUserById(userId);
     if (!user) throw new Error('User not found');
+    // Allow profile updates even for unverified accounts
     delete userData.password;
     delete userData.role;
     const updatedUser = await editUserById(userId, userData);
@@ -161,12 +145,9 @@ const editUserService = async (userId, userData) => {
 };
 
 const forgotPassword = async (email) => {
-    if (!process.env.FRONTEND_URL) {
-        console.error("FATAL: FRONTEND_URL environment variable is not set.");
-        throw new Error("Server configuration error prevents sending reset links.");
-    }
     const user = await findUserByEmail(email);
     if (!user) {
+        console.log(`Password reset for non-existent user: ${email}`);
         return;
     }
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -205,6 +186,7 @@ const verifyToken = (user) => {
 const updatePassword = async ({ email, currentPassword, newPassword }) => {
     const user = await findUserByEmail(email);
     if (!user) throw new Error('User not found');
+    // Allow password updates even for unverified accounts
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) throw new Error('Invalid current password');
     user.password = await bcrypt.hash(newPassword, 10);
@@ -230,6 +212,5 @@ module.exports = {
   assignAdmin,
   verifyToken,
   forgotPassword,
-  resetPassword,
-  verifyExistingUser,
+  resetPassword
 };
