@@ -1,14 +1,24 @@
 const nodemailer = require('nodemailer');
 
+// const transporter = nodemailer.createTransport({
+//   host: 'smtp.gmail.com', // Explicit host
+//   port: 465, // Secure port
+//   secure: true, // Use SSL/TLS
+//   auth: {
+//     user: process.env.GMAIL_USER,
+//     pass: process.env.GMAIL_PASS, // This is your App Password
+//   },
+// });
+
+
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com', // Explicit host
-  port: 465, // Secure port
-  secure: true, // Use SSL/TLS
+  service: 'gmail', // Handles host/port automatically
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS, // This is your App Password
+    user: process.env.GMAIL_USER, // your Gmail address
+    pass: process.env.GMAIL_PASS, // your 16-character app password
   },
 });
+
 
 const sendMail = async (to, subject, text) => {
   const mailOptions = {
