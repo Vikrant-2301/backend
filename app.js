@@ -25,10 +25,11 @@ app.use(helmet()); // Sets crucial security headers
 
 // FIX: Whitelist of allowed frontend domains for production-ready CORS
 const whitelist = [
-    'http://localhost:3000',          // Your local frontend
-    'https://discoverarch.org',       // Your production domain (non-www)
-    'https://www.discoverarch.org'    // Your production domain (www)
-];
+    'http://localhost:3000',
+    'https://discoverarch.org',
+    'https://www.discoverarch.org',
+    process.env.FRONTEND_URL,
+].filter(Boolean);
 
 const corsOptions = {
     origin: function (origin, callback) {
