@@ -8,7 +8,7 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 // Determine the 'from' name and email
 // Use your SMTP_USER for the email if it's set, otherwise default.
 const senderName = process.env.EMAIL_FROM_NAME || 'DiscoverArch';
-const senderEmail = process.env.SMTP_USER || 'register.discoverarch@gmail.com';
+const senderEmail = process.env.SMTP_USER || 'contact@discoverarch.org';
 
 const sendMail = async (to, subject, htmlContent) => {
   if (!BREVO_API_KEY) {
