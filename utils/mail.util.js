@@ -1,98 +1,61 @@
-const nodemailer = require('nodemailer');
+// utils/mail.util.js
+const axios = require('axios');
 
-// Prefer generic SMTP if provided; fallback to Gmail App Password
-function createTransporter() {
-  try {
-    // Try to read generic SMTP settings (for production/other providers)
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
-    const smtpSecure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || smtpPort === 465;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+// Get the API key from environment variables
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-    // Try to read specific Gmail settings (common for development)
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_PASS;
+// Determine the 'from' name and email
+// Use your SMTP_USER for the email if it's set, otherwise default.
+const senderName = process.env.EMAIL_FROM_NAME || 'DiscoverArch';
+const senderEmail = process.env.SMTP_USER || 'register.discoverarch@gmail.com';
 
-    if (smtpHost && smtpUser && smtpPass) {
-      console.log('Using SMTP configuration for email transport');
-      return nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpSecure,
-        auth: { user: smtpUser, pass: smtpPass },
-        pool: true,
-        connectionTimeout: 15000,
-        socketTimeout: 15000,
-        tls: {
-          rejectUnauthorized: false // Helps with self-signed certificates in some environments
-        }
-      });
-    }
-
-    if (gmailUser && gmailPass) {
-      console.log('Using Gmail configuration for email transport');
-      return nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user: gmailUser, pass: gmailPass },
-        pool: true,
-        connectionTimeout: 15000,
-        socketTimeout: 15000,
-      });
-    }
-
-    console.error('Email service not configured: set SMTP_* or GMAIL_USER/GMAIL_PASS env vars.');
-    return null;
-  } catch (error) {
-    console.error('Error creating email transporter:', error);
-    return null;
-  }
-}
-
-// Create transporter once at module load
-let transporter = createTransporter();
-
-// Verify transporter is working
-if (transporter) {
-  transporter.verify((error) => {
-    if (error) {
-      console.error('Email transporter verification failed:', error);
-      transporter = null;
-    } else {
-      console.log('Email transporter is ready to send messages');
-    }
-  });
-}
-
-const sendMail = async (to, subject, text) => {
-  if (!transporter) {
-    // Try to recreate transporter one more time
-    transporter = createTransporter();
-    if (!transporter) {
-      throw new Error('Email service not configured or connection failed. Please check SMTP or Gmail credentials.');
-    }
+const sendMail = async (to, subject, htmlContent) => {
+  if (!BREVO_API_KEY) {
+    console.error('Email service not configured: BREVO_API_KEY is missing.');
+    throw new Error('Email service is not configured.');
   }
 
-  // Determine the 'from' address dynamically
-  const fromEmail = process.env.EMAIL_FROM || 
-                   (process.env.GMAIL_USER ? process.env.GMAIL_USER : 'DiscoverArch <register.discoverarch@gmail.com>');
-  const fromAddress = process.env.EMAIL_FROM || (process.env.GMAIL_USER ? `"DiscoverArch" <${process.env.GMAIL_USER}>` : 'no-reply@discoverarch.org');
+  // Brevo's API payload structure
+  const payload = {
+    sender: {
+      name: senderName,
+      email: senderEmail,
+    },
+    to: [
+      {
+        email: to,
+        // You can also add a name here if you have it
+        // name: toName 
+      },
+    ],
+    subject: subject,
+    htmlContent: htmlContent, // Brevo uses htmlContent
+    // textContent is a fallback for email clients that don't support HTML
+    textContent: htmlContent.replace(/<[^>]*>?/gm, ''), // Basic HTML to text conversion
+  };
 
   try {
-    // Send mail with defined transport object
-    const info = await transporter.sendMail({
-      from: fromEmail,
-      to,
-      subject,
-      text,
-      html: text, // Allow HTML content
+    console.log(`Sending email via Brevo API to: ${to}`);
+    
+    // Make the API request
+    const response = await axios.post(BREVO_API_URL, payload, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY, // Use the API key here
+      },
+      timeout: 10000, // 10-second timeout
     });
 
-    console.log('Email sent successfully:', info.messageId);
-    return info;
+    console.log('Email sent successfully. Message ID:', response.data.messageId);
+    return response.data;
+
   } catch (error) {
-    console.error('Failed to send email:', error);
-    throw new Error('Failed to send email. Check SMTP/Gmail credentials and network connectivity.');
+    // Handle errors from the Brevo API
+    console.error('Failed to send email via Brevo API:', error.response?.data || error.message);
+    const apiError = error.response?.data?.message || error.message;
+    throw new Error(`Failed to send email: ${apiError}`);
   }
 };
 
