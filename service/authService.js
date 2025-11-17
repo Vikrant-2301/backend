@@ -200,6 +200,21 @@ const assignAdmin = async (email) => {
     return user;
 };
 
+
+const setUserRole = async (targetUserId, newRole) => {
+    // Validate the role
+    if (!['admin', 'user'].includes(newRole)) {
+        throw new Error('Invalid role specified.');
+    }
+    
+    const user = await findUserById(targetUserId);
+    if (!user) throw new Error('User not found');
+    
+    user.role = newRole;
+    await user.save();
+    return user;
+};
+
 module.exports = {
   sendRegistrationOtp,
   verifyAndCreateUser,
@@ -212,5 +227,6 @@ module.exports = {
   assignAdmin,
   verifyToken,
   forgotPassword,
-  resetPassword
+  resetPassword,
+    setUserRole
 };

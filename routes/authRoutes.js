@@ -12,7 +12,8 @@ const {
     verifyTokenController,
     forgotPasswordController,
     resetPasswordController,
-    resendVerificationController
+    resendVerificationController,
+    setUserRoleController
 } = require('../controller/authController');
 const authMiddleware = require('../middleware/auth.middleware');
 const roleMiddleware = require('../middleware/access.middleware');
@@ -37,5 +38,6 @@ router.post('/password', authMiddleware, updatePasswordController);
 router.get('/users', authMiddleware, roleMiddleware('admin'), getAllUsersController);
 router.delete('/users/:id', authMiddleware, roleMiddleware('admin'), deleteUserByIdController);
 router.post('/assign-admin', authMiddleware, roleMiddleware('admin'), assignAdminController);
+router.put('/users/:id/role', authMiddleware, roleMiddleware('admin'), setUserRoleController);
 
 module.exports = router;

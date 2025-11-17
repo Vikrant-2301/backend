@@ -125,6 +125,22 @@ const resetPasswordController = async (req, res) => {
     }
 };
 
+const setUserRoleController = async (req, res) => {
+    try {
+        const { id } = req.params; // Get user ID from the URL parameter
+        const { role } = req.body; // Get the new role from the request body
+
+        if (!role) {
+            return res.status(400).json({ error: 'Role is required in the body.' });
+        }
+
+        const user = await authService.setUserRole(id, role);
+        res.status(200).json({ message: 'User role updated successfully', user });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 module.exports = {
     sendOtpController,
     verifyAndCreateController,
@@ -138,5 +154,6 @@ module.exports = {
     verifyTokenController,
     forgotPasswordController,
     resetPasswordController,
-    resendVerificationController
+    resendVerificationController,
+    setUserRoleController
 };
