@@ -15,6 +15,9 @@ const postRoutes = require('./routes/postRoutes');
 const registerRoutes = require('./routes/registerRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const certificationsRoutes = require('./routes/certificationsRoutes');
+const blogRoutes = require('./routes/blogRoutes');
+const authorRoutes = require('./routes/authorRoutes'); // <-- IMPORT NEW ROUTE
+const uploadRoutes = require('./routes/uploadRoutes');
 
 // --- Initialize Express App ---
 const app = express();
@@ -71,6 +74,9 @@ app.use(`${apiPrefix}/courses`, courseRoutes);
 app.use(`${apiPrefix}/register`, registerRoutes);
 app.use(`${apiPrefix}/orders`, orderRoutes);
 app.use(`${apiPrefix}/certifications`, certificationsRoutes);
+app.use(`${apiPrefix}/blogs`, blogRoutes);
+app.use(`${apiPrefix}/authors`, authorRoutes); // <-- USE NEW ROUTE
+app.use(`${apiPrefix}/upload`, uploadRoutes); // <-- USE NEW ROUTE
 
 // --- 404 Handler for unknown API routes ---
 app.use('/api/*', (req, res) => {
