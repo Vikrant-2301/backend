@@ -13,7 +13,11 @@ const {
     forgotPasswordController,
     resetPasswordController,
     resendVerificationController,
-    setUserRoleController
+    setUserRoleController,
+    getPublicProfileByIdController,
+    toggleFavoriteBlogController,
+    getUserFavoritesController,
+    getAdminChartData
 } = require('../controller/authController');
 const authMiddleware = require('../middleware/auth.middleware');
 const roleMiddleware = require('../middleware/access.middleware');
@@ -30,6 +34,7 @@ router.post('/login', loginController);
 router.post('/forgot-password', forgotPasswordController);
 router.post('/reset-password/:token', resetPasswordController);
 router.get('/users/:email', getUserByEmailController);
+router.get('/public/profile/:id', getPublicProfileByIdController); // --- NEW PUBLIC ROUTE ---
 
 // --- AUTHENTICATED & ADMIN ROUTES ---
 router.get('/verify-token', authMiddleware, verifyTokenController);
@@ -39,5 +44,10 @@ router.get('/users', authMiddleware, roleMiddleware('admin'), getAllUsersControl
 router.delete('/users/:id', authMiddleware, roleMiddleware('admin'), deleteUserByIdController);
 router.post('/assign-admin', authMiddleware, roleMiddleware('admin'), assignAdminController);
 router.put('/users/:id/role', authMiddleware, roleMiddleware('admin'), setUserRoleController);
+
+// --- NEW AUTHENTICATED ROUTE ---
+router.post('/profile/favorites/blog/:blogId', authMiddleware, toggleFavoriteBlogController);
+router.get('/profile/favorites', authMiddleware, getUserFavoritesController);
+router.get('/admin/charts', authMiddleware, roleMiddleware('admin'), getAdminChartData);
 
 module.exports = router;

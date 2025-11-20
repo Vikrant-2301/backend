@@ -6,7 +6,12 @@ const createOrder = async (orderData) => {
 };
 
 const getAllOrders = async () => {
-  return await Order.find().populate('courseId', 'courseName price'); // Populate course details
+  return await Order.find().populate('courseId', 'courseName price');
 };
 
-module.exports = { createOrder, getAllOrders };
+// NEW: Add this function to find orders for a specific user
+const getOrdersByUserId = async (userId) => {
+  return await Order.find({ orderBy: userId }).sort({ orderTime: -1 });
+};
+
+module.exports = { createOrder, getAllOrders, getOrdersByUserId };

@@ -1,18 +1,13 @@
-const { createOrder, getAllOrders } = require('../repo/orderRepo');
-const Course = require('../model/courseModel');
+const { createOrder, getAllOrders, getOrdersByUserId } = require('../repo/orderRepo');
+// const Course = require('../model/courseModel'); // Removed to allow static products
 
 const createNewOrder = async ({ orderBy, orderValue, courseId, orderStatus }) => {
-  // Check if the course exists
-  const course = await Course.findById(courseId);
-  if (!course) {
-    throw new Error('Invalid courseId: Course does not exist');
-  }
-
+  // We skip the Course.findById check to allow static products (like "tree-brush-set")
+  
   const orderData = {
-    orderId: generateOrderId(),
-    orderBy,
+    orderBy, // This is the User ID
     orderValue,
-    courseId,
+    courseId, // The Product ID string
     orderStatus: orderStatus || 'pending',
   };
 
@@ -23,15 +18,11 @@ const fetchAllOrders = async () => {
   return await getAllOrders();
 };
 
+// Ensure this function exists to fetch user's library
+const fetchOrdersByUser = async (userId) => {
+    // You might need to implement getOrdersByUserId in your repo if missing
+    const Order = require('../model/orderModel'); 
+    return await Order.find({ orderBy: userId });
+};
 
-const generateOrderId = () => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const length = Math.floor(Math.random() * 6) + 5; // Length between 5 and 10
-    let orderId = '';
-    for (let i = 0; i < length; i++) {
-      orderId += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return orderId;
-  };
-
-module.exports = { createNewOrder, fetchAllOrders };
+module.exports = { createNewOrder, fetchAllOrders, fetchOrdersByUser };

@@ -4,7 +4,6 @@ const router = express.Router();
 const multer = require('multer');
 const uploadController = require('../controller/uploadController');
 const authMiddleware = require('../middleware/auth.middleware'); // Protect the route
-const roleMiddleware = require('../middleware/access.middleware'); // Ensure only admin can upload
 
 // Use memoryStorage to handle the file as a buffer
 const storage = multer.memoryStorage();
@@ -14,11 +13,11 @@ const upload = multer({
 });
 
 // POST /api/v1/upload/image
+// FIX: Removed roleMiddleware('admin') to allow ALL logged-in users to upload
 router.post(
   '/image',
-  authMiddleware,
-  roleMiddleware('admin'), // Only admins can upload blog images
-  upload.single('image'), // 'image' must match the FormData key from frontend
+  authMiddleware, 
+  upload.single('image'), 
   uploadController.uploadBlogImage
 );
 
