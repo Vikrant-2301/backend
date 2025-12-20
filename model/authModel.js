@@ -54,7 +54,8 @@ const authSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, required: false, default: '' },
     password: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'user'], default: 'user' },
+    // UPDATED: Added 'member' to the enum
+    role: { type: String, enum: ['admin', 'user', 'member'], default: 'user' },
     
     // --- Profile Fields ---
     professionalTitle: { type: String, default: '' },

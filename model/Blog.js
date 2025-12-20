@@ -22,12 +22,11 @@ const blogSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // --- MODIFICATION ---
-  // Changed ref from 'Auth' to 'Author'
+  // --- MODIFICATION: Made Author optional ---
   author: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Author', // Use the new Author model
-    required: true
+    ref: 'Author', 
+    required: false // Changed from true to false
   },
   // --- END MODIFICATION ---
   tags: [
@@ -35,7 +34,7 @@ const blogSchema = new mongoose.Schema({
   ],
   status: { 
     type: String, 
-    enum: ['draft', 'published'], 
+    enum: ['draft', 'published', 'pending', 'rejected'], // Added 'pending' and 'rejected' to enum for completeness if not already there
     default: 'draft' 
   },
   metaDescription: {
@@ -43,9 +42,8 @@ const blogSchema = new mongoose.Schema({
     trim: true,
     maxlength: 160
   },
-  // --- NEW FIELDS ---
   likes: [
-    { type: mongoose.Schema.Types.ObjectId, ref: 'Auth' } // Likes can still be from Users (Auth)
+    { type: mongoose.Schema.Types.ObjectId, ref: 'Auth' }
   ],
   likeCount: {
     type: Number,
@@ -59,7 +57,6 @@ const blogSchema = new mongoose.Schema({
     type: Number,
     default: 0
   }
-  // --- END NEW FIELDS ---
 }, { timestamps: true });
 
 blogSchema.pre('validate', function(next) {

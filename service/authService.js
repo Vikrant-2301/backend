@@ -245,7 +245,8 @@ const assignAdmin = async (email) => {
 };
 
 const setUserRole = async (targetUserId, newRole) => {
-    if (!['admin', 'user'].includes(newRole)) {
+    // UPDATED: Allow 'member' in the validation array
+    if (!['admin', 'user', 'member'].includes(newRole)) {
         throw new Error('Invalid role specified.');
     }
     const user = await findUserById(targetUserId);

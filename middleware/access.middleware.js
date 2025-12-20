@@ -2,31 +2,28 @@ const jwt = require('jsonwebtoken'); // Ensure you have the 'jsonwebtoken' libra
 const { jwtSecret } = require('../config');
 
 /*
- *
  * Role-based access middleware
- * @param {string} role - The required role ('user' or 'admin')
+ * @param {string|string[]} allowedRoles - Required role(s)
  */
-const roleMiddleware = (role) => {
+const roleMiddleware = (allowedRoles) => {
   return (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
-    console.log("token",token) 
-    // Expecting 'Bearer <token>'
     if (!token) {
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
 
     try {
-      // Verify the token
       const decoded = jwt.verify(token, jwtSecret);
-      console.log("decode",decoded)
       req.user = decoded;
 
-      // Check the user's role
-      if (decoded.role !== role) {
+      const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+      const normalizedRoles = roles.map(r => String(r).toLowerCase());
+      const userRole = String(decoded.role || '').toLowerCase();
+      if (!normalizedRoles.includes(userRole)) {
         return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
       }
 
-      next(); // Proceed to the next middleware or route handler
+      next();
     } catch (err) {
       return res.status(400).json({ message: 'Invalid token.' });
     }

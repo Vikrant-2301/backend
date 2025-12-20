@@ -19,6 +19,8 @@ const blogRoutes = require('./routes/blogRoutes');
 const authorRoutes = require('./routes/authorRoutes'); // <-- IMPORT NEW ROUTE
 const uploadRoutes = require('./routes/uploadRoutes');
 const healthRoutes = require('./routes/healthRoutes'); // <-- ADD THIS
+const contactRoutes = require('./routes/contactRoutes'); // <-- IMPORT NEW ROUTE
+const newsletterRoutes = require('./routes/newsletterRoutes'); // <-- IMPORT NEW ROUTE
 
 // --- Initialize Express App ---
 const app = express();
@@ -79,6 +81,8 @@ app.use(`${apiPrefix}/blogs`, blogRoutes);
 app.use(`${apiPrefix}/authors`, authorRoutes); // <-- USE NEW ROUTE
 app.use(`${apiPrefix}/upload`, uploadRoutes); // <-- USE NEW ROUTE
 app.use(`${apiPrefix}/health`, healthRoutes); // <-- USE NEW ROUTE
+app.use(`${apiPrefix}/contacts`, contactRoutes); // <-- USE NEW ROUTE
+app.use(`${apiPrefix}/newsletter`, newsletterRoutes); // <-- USE NEW ROUTE
 
 // --- 404 Handler for unknown API routes ---
 app.use('/api/*', (req, res) => {
