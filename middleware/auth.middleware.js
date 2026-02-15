@@ -8,6 +8,7 @@ const authMiddleware = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    console.log('[AuthMiddleware] No token provided');
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
@@ -17,7 +18,8 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded; // Attach user payload (id, email, role) to the request
     next();
   } catch (err) {
-    return res.status(400).json({ error: 'Invalid token.' });
+    // console.log('[AuthMiddleware] Invalid token:', err.message);
+    return res.status(401).json({ error: 'Invalid token.' });
   }
 };
 

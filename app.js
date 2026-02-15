@@ -22,6 +22,8 @@ const healthRoutes = require('./routes/healthRoutes'); // <-- ADD THIS
 const contactRoutes = require('./routes/contactRoutes'); // <-- IMPORT NEW ROUTE
 const newsletterRoutes = require('./routes/newsletterRoutes'); // <-- IMPORT NEW ROUTE
 const competitionRoutes = require('./routes/competitionRoutes');
+const votingRoutes = require('./routes/votingRoutes'); // <-- IMPORT VOTING ROUTES
+const systemSettingsRoutes = require('./routes/systemSettingsRoutes'); // <-- IMPORT SYSTEM SETTINGS ROUTES
 
 // --- Initialize Express App ---
 const app = express();
@@ -85,6 +87,8 @@ app.use(`${apiPrefix}/health`, healthRoutes); // <-- USE NEW ROUTE
 app.use(`${apiPrefix}/contacts`, contactRoutes); // <-- USE NEW ROUTE
 app.use(`${apiPrefix}/newsletter`, newsletterRoutes); // <-- USE NEW ROUTE
 app.use(`${apiPrefix}/competitions`, competitionRoutes);
+app.use(`${apiPrefix}/voting`, votingRoutes); // <-- USE VOTING ROUTES
+app.use(`${apiPrefix}/settings`, systemSettingsRoutes); // <-- USE SYSTEM SETTINGS ROUTES
 
 // --- 404 Handler for unknown API routes ---
 app.use('/api/*', (req, res) => {
